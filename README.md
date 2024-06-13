@@ -8,8 +8,8 @@ We present `MC-ANN`,  a Mixture Clustering-Based Attention Neural Network for ti
 Experiments were executed in an Anaconda 3 environment with Python 3.8.8. The following will create an Anaconda environment and install the requisite packages for the project.
 
 ```bash
-conda create -n DAN python=3.8.8
-conda activate DAN
+conda create -n MCANN python=3.8.8
+conda activate MCANN
 conda install pytorch==1.11.0 torchvision==0.12.0 torchaudio==0.11.0 -c pytorch
 python -m pip install -r requirements.txt
 ```
