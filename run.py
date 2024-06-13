@@ -28,7 +28,7 @@ class Options():
         self.parser.add_argument('--os_v', type=int, default=5, help='oversampling frequency')
         self.parser.add_argument('--seq_weight', type=float, default=0.3, help='sequence cluster weight')        
         self.parser.add_argument('--batchsize', type=int, default=48, help='batch size of train data')
-        self.parser.add_argument('--epochs', type=int, default=1, help='train epochs')
+        self.parser.add_argument('--epochs', type=int, default=50, help='train epochs')
         self.parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate')
         self.parser.add_argument('--lradj', type=str, default='type4', help='learning rate adjustment policy')
         
