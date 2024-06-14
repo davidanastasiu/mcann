@@ -214,9 +214,9 @@ if __name__ == '__main__':
     Inference_result = model.inference()
 
     # Computing RMSE and MAPE
-    metrics = model.compute_metrics(Inference_result)
-    print("RMSE: ", np.array(metrics[0][0]))
-    print("MAPE: ", np.array(metrics[1][0]))
+    rmse, mape = model.compute_metrics(Inference_result)
+    print("RMSE: ", rmse)
+    print("MAPE: ", mape)   
     
     # Save the model
     expr_dir = os.path.join(opt.outf, opt.name, 'train')
