@@ -109,7 +109,7 @@ class Options():
             self.opt.mode = 'inference'
         os.remove('opt.txt')          
         # Load model
-        model = DAN_I(self.opt)
+        model = MCANN_I(self.opt)
         model.model_load(pt_file)  
         os.chdir(c_dir) 
         return model
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     ds = DS(opt, trainX, R_X)
 
     # model training
-    model = DAN(opt,ds)
+    model = MCANN(opt,ds)
     model.train()
 
     # Inferencing, saving the result to Inference_dir      
