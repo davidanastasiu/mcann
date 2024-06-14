@@ -1,0 +1,34 @@
+atten_dim|300
+batchsize|48
+epochs|50
+gpu_id|0
+hidden_dim|512
+input_dim|1
+input_len|360
+is_stream|0
+layer|4
+learning_rate|0.001
+lradj|type4
+mode|train
+model|Lexington
+name|Lexington
+ngpu|1
+os_s|18
+os_v|4
+outf|./output
+output_dim|1
+output_len|72
+oversampling|40
+rain_sensor|reservoir_stor_4007_sof24
+save|0
+seq_weight|0
+start_point|1991-07-01 23:30:00
+stream_sensor|reservoir_stor_4007_sof24
+test_end|2019-07-01 00:30:00
+test_start|2018-07-01 00:30:00
+train_point|2018-06-30 23:30:00
+train_seed|1010
+train_volume|40000
+val_seed|2007
+val_size|60
+watershed|0
