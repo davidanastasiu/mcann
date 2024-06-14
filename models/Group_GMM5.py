@@ -27,10 +27,10 @@ logging.basicConfig(filename = "model.log", filemode='w', level = logging.DEBUG)
 random.seed('a')
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-class DAN:
+class MCANN:
 
     def __init__(self, opt, dataset):
-#         super(DAN, self).__init__(opt)
+#         super(MCANN, self).__init__(opt)
 
         self.logger = logging.getLogger()
         self.logger.info("I am logging...")
@@ -418,7 +418,7 @@ class DAN:
         vals4 = aa
         # compute metrics
         all_GT=[]
-        all_DAN=[]
+        all_MCANN=[]
         loop = 0
         ind = 0
         while loop<len(val_points):
@@ -435,8 +435,8 @@ class DAN:
             ind += 1  
             temp_vals4=list(vals4[ind-1])
             all_GT.extend(x[15*24:])
-            all_DAN.extend(temp_vals4) 
-        metrics = metric_g("MC-ANN", np.array(all_DAN), np.array(all_GT))
+            all_MCANN.extend(temp_vals4) 
+        metrics = metric_g("MC-ANN", np.array(all_MCANN), np.array(all_GT))
         return metrics
     
     def train(self):
