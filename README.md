@@ -16,7 +16,7 @@ python -m pip install -r requirements.txt
 
 ## Files organizations
 
-Download the datasets from [here](https://clp.engr.scu.edu/static/datasets/mcann_datasets.zip) and upzip the files in the data_provider directory. In the ./data_provider/datasets directory, there should now be  5 reservoir sensor (file names end with _sof24.tsv) datasets.
+Download the datasets from [here](https://clp.engr.scu.edu/static/datasets/MCANN-datasets.zip) and upzip the files in the data_provider directory. In the ./data_provider/datasets directory, there should now be  5 reservoir sensor (file names end with _sof24.tsv) datasets.
 
 ## Parameters setting
 
