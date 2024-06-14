@@ -25,10 +25,10 @@ logging.basicConfig(filename = "Inference.log", filemode='w', level = logging.DE
 random.seed('a')
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-class DAN_I:
+class MCANN_I:
 
     def __init__(self, opt):
-#         super(DAN, self).__init__(opt)
+#         super(MCANN, self).__init__(opt)
 
         self.logger = logging.getLogger()
         self.logger.info("I am logging...")
