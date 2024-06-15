@@ -155,7 +155,7 @@ class MCANN_I:
         stream_data, indicator_data, pre_gt = self.get_data(test_point)  
         predict = self.predict(test_point, stream_data, indicator_data, pre_gt)
         
-        return predict, gt
+        return predict, pre_gt
     
     def predict(self, test_point, stream_data, rain_data, pre_gt):
         
