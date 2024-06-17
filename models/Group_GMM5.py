@@ -64,7 +64,7 @@ class MCANN:
         self.thre2 = dataset.thre2
         self.DATA = dataset.DATA
         self.gmm = dataset.gmm
-        self.gmm_l = 6  #opt.gmm_len
+        self.gmm_l = 72  #opt.gmm_len
         self.is_over_sampling = 1
         self.batchsize = opt.batchsize
         self.epochs = opt.epochs
