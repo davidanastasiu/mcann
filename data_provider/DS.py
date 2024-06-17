@@ -57,7 +57,7 @@ class DS:
         self.thre2 = 0
         self.os_h = opt.os_s
         self.os_l = opt.os_s
-        self.gmm_l = 6 #opt.gmm_len
+        self.gmm_l = 72 #opt.gmm_len
         
         self.is_prob_feature = 1
         self.val_data_loader = []
