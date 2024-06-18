@@ -44,7 +44,7 @@ class MCANN_I:
         self.TrainEnd = opt.model
         self.os = opt.oversampling
         self.is_stream = opt.is_stream    
-        self.gmm_l = 6  #opt.gmm_len
+        self.gmm_l = 72  #opt.gmm_len
         self.opt_hinter_dim = opt.watershed
         self.is_over_sampling = 1
         self.encoder = EncoderLSTM(self.opt).to(device)        
