@@ -133,6 +133,7 @@ class MCANN_I:
         stream_data = trainX[point-15*24:point]["value"].values.tolist()
         pre_gt = np.array(trainX[point-1:point]["value"])
         pre_gt = pre_gt[0]
+        gt = np.array(trainX[point:point+3*24]["value"])
         if pre_gt is None:
             print("pre_gt is None, please fill it or switch to another time point.")
         NN = np.isnan(stream_data).any() 
@@ -148,14 +149,14 @@ class MCANN_I:
         if NN:
             print("There is None value in the rain input sequence.")      
        
-        return stream_data, rain_data, pre_gt
+        return stream_data, rain_data, pre_gt, gt
     
     def test_single(self, test_point):
         
-        stream_data, indicator_data, pre_gt = self.get_data(test_point)  
+        stream_data, indicator_data, pre_gt, gt = self.get_data(test_point)  
         predict = self.predict(test_point, stream_data, indicator_data, pre_gt)
         
-        return predict, pre_gt
+        return predict, gt
     
     def predict(self, test_point, stream_data, rain_data, pre_gt):
         
