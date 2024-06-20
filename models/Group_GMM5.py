@@ -436,7 +436,7 @@ class MCANN:
             temp_vals4=list(vals4[ind-1])
             all_GT.extend(x[15*24:])
             all_MCANN.extend(temp_vals4) 
-            mae, mse, rmse, mape = metric("MC-ANN", np.array(all_DAN), np.array(all_GT))
+            mae, mse, rmse, mape = metric("MC-ANN", np.array(all_MCANN), np.array(all_GT))
         return rmse, mape
     
     def train(self):
