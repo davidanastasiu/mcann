@@ -1,4 +1,4 @@
-atten_dim|384
+atten_dim|600
 batchsize|48
 epochs|50
 gpu_id|0
@@ -18,7 +18,7 @@ os_v|4
 outf|./output
 output_dim|1
 output_len|72
-oversampling|20
+oversampling|40
 rain_sensor|reservoir_stor_4009_sof24
 save|0
 seq_weight|0.4
