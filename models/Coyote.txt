@@ -1,4 +1,4 @@
-atten_dim|300
+atten_dim|800
 batchsize|48
 epochs|50
 gpu_id|0
@@ -32,3 +32,4 @@ train_volume|40000
 val_seed|2007
 val_size|60
 watershed|0
+
