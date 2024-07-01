@@ -17,7 +17,7 @@ import pandas as pd
 import random
 from utils.utils2 import *
 from models.GMM_Model5 import *
-from sklearn.metrics import mean_absolute_percentage_error
+from utils.metric import *
 from datetime import datetime, timedelta
 import zipfile
 import logging
@@ -28,7 +28,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class MCANN_I:
 
     def __init__(self, opt):
-#         super(MCANN, self).__init__(opt)
 
         self.logger = logging.getLogger()
         self.logger.info("I am logging...")
@@ -119,7 +118,7 @@ class MCANN_I:
                 
     def get_data(self, test_point):
         
-        print("test_point is: ", test_point)
+#         print("test_point is: ", test_point)
         # data prepare
         trainX = pd.read_csv('./data_provider/datasets/'+ self.opt.stream_sensor+'.tsv', sep='\t')
         trainX.columns = ["datetime", "value"] 
@@ -261,4 +260,17 @@ class MCANN_I:
         test_predict = (test_predict + abs(test_predict))/2 
         
         return test_predict
-    
+
+    def Inference(self):
+        # Inference the whole test set
+        test_set = pd.read_csv('./data_provider/datasets/test_timestamps_24avg.tsv',sep='\t')
+        test_points = test_set["Hold Out Start"]
+        count = 0
+        pre = []
+        gt = []
+        for testP in test_points:
+            predicted, ground_truth = self.test_single(testP)     
+            pre.extend(predicted)
+            gt.extend(ground_truth)
+        metric_rolling('Every 3 days', pre, gt, rm=72)
+        metric_rolling('Every 8 hours', pre, gt, rm=8)
