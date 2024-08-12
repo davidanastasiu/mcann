@@ -117,15 +117,18 @@ class MCANN_I:
                 self.gm3 = torch.load(pt_file) 
                 
     def get_data(self, test_point):
-        
-#         print("test_point is: ", test_point)
+
         # data prepare
         trainX = pd.read_csv('./data_provider/datasets/'+ self.opt.stream_sensor+'.tsv', sep='\t')
         trainX.columns = ["datetime", "value"] 
         trainX.sort_values('datetime', inplace=True),
-        R_X = pd.read_csv('./data_provider/datasets/'+ self.opt.rain_sensor+'.tsv', sep='\t')
-        R_X.columns = ["datetime", "value"] 
-        R_X.sort_values('datetime', inplace=True)
+        if self.opt.watershed == 0:
+            R_X = trainX
+        else:
+            R_X = pd.read_csv('./data_provider/datasets/'+self.opt.rain_sensor+'.tsv', sep='\t')
+            R_X.columns = ["id", "datetime", "value"] 
+            R_X.sort_values('datetime', inplace=True)
+
         
         # read stream data        
         point = trainX[trainX["datetime"]==test_point].index.values[0]
@@ -140,10 +143,8 @@ class MCANN_I:
             print("There is None value in the input sequence.")   
         
         # read rain data
-        R_X = pd.read_csv('./data_provider/datasets/'+self.opt.rain_sensor+'.tsv', sep='\t')
-        R_X.columns = ["datetime", "value"] 
         point = R_X[R_X["datetime"]==test_point].index.values[0]
-        rain_data = R_X[point-72:point]["value"].values.tolist()
+        rain_data = R_X[point-15*24:point]["value"].values.tolist()
         NN = np.isnan(rain_data).any() 
         if NN:
             print("There is None value in the rain input sequence.")      
