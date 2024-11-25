@@ -457,7 +457,7 @@ class DS:
         begin_num = self.trainX[self.trainX["datetime"]==self.test_start_time].index.values[0] - start_num
         end_num = self.trainX[self.trainX["datetime"]==self.test_end_time].index.values[0] - start_num
 
-        if self.is_stream == 0:
+        if self.is_stream == 1:
             for i in range(int((end_num-begin_num-3*24*4)/16)):
                 point = self.data_time[begin_num+i*16]
                 if not np.isnan(np.array(self.data[begin_num+i*16-15*24*4:begin_num+i*16 + 3*24*4])).any() :
