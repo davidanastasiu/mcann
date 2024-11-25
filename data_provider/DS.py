@@ -38,7 +38,7 @@ class DS:
         self.mini = 0
         self.R_mean = 0
         self.R_std = 0
-        self.is_stream = 1
+        self.is_stream = 0
         self.tag = []
         self.sensor_data = []
         self.diff_data = []
@@ -203,7 +203,7 @@ class DS:
         # read sensor data to vector
         start_num = self.trainX[self.trainX["datetime"]==self.opt.start_point].index.values[0]
         self.start_num = start_num
-        print("for sensor ", self.opt.stream_sensor, "start_num is: ", start_num)
+        print("for sensor ", self.opt.reservoir_sensor, "start_num is: ", start_num)
         idx_num = 0
         #foot label of train_end
         train_end = self.trainX[self.trainX["datetime"]==self.opt.train_point].index.values[0] - start_num 
@@ -402,7 +402,7 @@ class DS:
         self.R_X = R_X
         # read sensor data to vector
         start_num = self.trainX[self.trainX["datetime"]==self.opt.start_point].index.values[0]
-        print("for sensor ", self.opt.stream_sensor, "start_num is: ", start_num)
+        print("for sensor ", self.opt.reservoir_sensor, "start_num is: ", start_num)
         idx_num = 0
         #foot label of train_end
         train_end = self.trainX[self.trainX["datetime"]==self.opt.train_point].index.values[0] - start_num 
@@ -457,7 +457,7 @@ class DS:
         begin_num = self.trainX[self.trainX["datetime"]==self.test_start_time].index.values[0] - start_num
         end_num = self.trainX[self.trainX["datetime"]==self.test_end_time].index.values[0] - start_num
 
-        if self.is_stream == 1:
+        if self.is_stream == 0:
             for i in range(int((end_num-begin_num-3*24*4)/16)):
                 point = self.data_time[begin_num+i*16]
                 if not np.isnan(np.array(self.data[begin_num+i*16-15*24*4:begin_num+i*16 + 3*24*4])).any() :

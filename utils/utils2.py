@@ -220,7 +220,7 @@ def plot(gt,pre):
     plt.figure(figsize=(15,3))
 #     plt.ylim(-1,900)
     plt.xlabel('time ( hours )')
-    plt.ylabel('streamflow')
+    plt.ylabel('water level')
     plt.plot(np.array(gt),'black',label="Ground Truth")
     plt.plot(np.array(pre),'blue',label="Predicted")
 

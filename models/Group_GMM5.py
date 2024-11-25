@@ -36,7 +36,7 @@ class DAN:
         self.logger.info("I am logging...")
         self.dataset = dataset
         self.opt = opt
-        self.sensor_id = opt.stream_sensor
+        self.sensor_id = opt.reservoir_sensor
         self.dataloader = dataset.get_train_data_loader()
         self.trainX = dataset.get_trainX()
         self.val_data = np.array(dataset.get_val_points()).squeeze(1)
@@ -59,7 +59,7 @@ class DAN:
         self.is_prob_feature = opt.watershed
         self.TrainEnd = opt.model
         self.os = opt.oversampling
-        self.is_stream = opt.is_stream    
+        self.is_stream = 0 #opt.is_stream    
         self.thre1 = dataset.thre1
         self.thre2 = dataset.thre2
         self.DATA = dataset.DATA
@@ -407,7 +407,7 @@ class DAN:
     def compute_metrics(self, aa):
         val_set=pd.read_csv('./data_provider/datasets/test_timestamps_24avg.tsv',sep='\t')
         val_points=val_set["Hold Out Start"]
-        trainX = pd.read_csv('./data_provider/datasets/'+self.opt.stream_sensor+'.tsv', sep='\t')
+        trainX = pd.read_csv('./data_provider/datasets/'+self.opt.reservoir_sensor+'.tsv', sep='\t')
         trainX.columns = ["datetime", "value"] 
         count = 0
         for test_point in val_points:

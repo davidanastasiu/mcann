@@ -20,7 +20,7 @@ Download the datasets from [here](https://clp.engr.scu.edu/static/datasets/MCANN
 
 ## Parameters setting
 
---stream_sensor: stream dataset file name. The file should be csv file.
+--reservoir_sensor: reservoir dataset file name. The file should be csv file.
 
 --rain_sensor: rain dataset file name. The file should be csv file.
 

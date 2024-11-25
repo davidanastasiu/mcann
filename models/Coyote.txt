@@ -23,7 +23,7 @@ rain_sensor|reservoir_stor_4005_sof24
 save|0
 seq_weight|0.4
 start_point|1991-07-01 23:30:00
-stream_sensor|reservoir_stor_4005_sof24
+reservoir_sensor|reservoir_stor_4005_sof24
 test_end|2019-07-01 00:30:00
 test_start|2018-07-01 00:30:00
 train_point|2018-06-30 23:30:00

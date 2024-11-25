@@ -42,7 +42,7 @@ class MCANN_I:
         self.is_prob_feature = opt.watershed
         self.TrainEnd = opt.model
         self.os = opt.oversampling
-        self.is_stream = opt.is_stream    
+        self.is_stream = 0 #opt.is_stream    
         self.gmm_l = 72  #opt.gmm_len
         self.opt_hinter_dim = opt.watershed
         self.is_over_sampling = 1
@@ -119,7 +119,7 @@ class MCANN_I:
     def get_data(self, test_point):
 
         # data prepare
-        trainX = pd.read_csv('./data_provider/datasets/'+ self.opt.stream_sensor+'.tsv', sep='\t')
+        trainX = pd.read_csv('./data_provider/datasets/'+ self.opt.reservoir_sensor+'.tsv', sep='\t')
         trainX.columns = ["datetime", "value"] 
         trainX.sort_values('datetime', inplace=True),
         if self.opt.watershed == 0:

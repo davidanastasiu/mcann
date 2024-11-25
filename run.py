@@ -21,7 +21,7 @@ class Options():
         
         self.parser.add_argument('--train_seed', default=1010, help='random seed for train sampling')
         self.parser.add_argument('--val_seed', default=2007, help='random seed for val sampling')
-        self.parser.add_argument('--stream_sensor', default='reservoir_stor_4007_sof24', help='stream dataset')
+        self.parser.add_argument('--reservoir_sensor', default='reservoir_stor_4007_sof24', help='reservoir dataset')
         self.parser.add_argument('--rain_sensor', default='reservoir_stor_4007_sof24', help='rain dataset')
         self.parser.add_argument('--is_stream', default=0, help='stream:1, reservoir:0')
         self.parser.add_argument('--os_s', type=int, default=0, help='oversampling steps')
@@ -138,8 +138,8 @@ class Options():
                     self.opt.seq_weight = float(val)                    
             elif n == "self.opt.hidden_dim": 
                     self.opt.hidden_dim = int(val)
-            elif n == "self.opt.stream_sensor": 
-                    self.opt.stream_sensor = str(val)    
+            elif n == "self.opt.reservoir_sensor": 
+                    self.opt.reservoir_sensor = str(val)    
             elif n == "self.opt.rain_sensor": 
                     self.opt.rain_sensor = str(val)
             elif n == "self.opt.atten_dim": 
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     opt = Options().parse()
     os.environ["CUDA_VISIBLE_DEVICES"] = str(opt.gpu_id)
     # data prepare
-    trainX = pd.read_csv('./data_provider/datasets/'+opt.stream_sensor+'.tsv', sep='\t')
+    trainX = pd.read_csv('./data_provider/datasets/'+opt.reservoir_sensor+'.tsv', sep='\t')
     trainX.columns = ["datetime", "value"] 
     trainX.sort_values('datetime', inplace=True),
     R_X = pd.read_csv('./data_provider/datasets/'+opt.rain_sensor+'.tsv', sep='\t')
