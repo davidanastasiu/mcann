@@ -1,10 +1,3 @@
-# Hard Train......................
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[17]:
-
-
 import time,os,sys
 import math
 
@@ -58,13 +51,12 @@ class DAN:
         self.is_watersheds = opt.watershed
         self.is_prob_feature = opt.watershed
         self.TrainEnd = opt.model
-        self.os = opt.oversampling
-        self.is_stream = 0 #opt.is_stream    
+        self.os = opt.oversampling   
         self.thre1 = dataset.thre1
         self.thre2 = dataset.thre2
         self.DATA = dataset.DATA
         self.gmm = dataset.gmm
-        self.gmm_l = 72  #opt.gmm_len
+        self.gmm_l = self.predict_days  #opt.gmm_len
         self.is_over_sampling = 1
         self.batchsize = opt.batchsize
         self.epochs = opt.epochs
@@ -97,10 +89,7 @@ class DAN:
 
     def std_denorm_dataset(self, predict_y0, pre_y, mini):
         
-        if  self.is_stream == 1:    
-            a2 = log_std_denorm_dataset(self.mean, self.std, predict_y0, pre_y)
-        else:
-            a2 = r_log_std_denorm_dataset(self.mean, self.std, mini, predict_y0, pre_y)
+        a2 = r_log_std_denorm_dataset(self.mean, self.std, mini, predict_y0, pre_y)
 
         return a2
 
@@ -412,7 +401,7 @@ class DAN:
         count = 0
         for test_point in val_points:
             point = trainX[trainX["datetime"]==test_point].index.values[0]
-            NN = np.isnan(trainX[point-15*24:point+3*24]["value"]).any() 
+            NN = np.isnan(trainX[point-self.train_days:point+self.predict_days]["value"]).any() 
             if not NN:
                 count += 1
         vals4 = aa
@@ -425,7 +414,7 @@ class DAN:
             ii=val_points[loop]
             val_point=val_points[ind]
             point=trainX[trainX["datetime"]==ii].index.values[0]
-            x=trainX[point-15*24:point+3*24]["value"].values.tolist()    
+            x=trainX[point-self.train_days:point+self.predict_days]["value"].values.tolist()    
             if (np.isnan(np.array(x)).any()):
                 loop = loop + 1 # id for time list 
                 continue
@@ -434,7 +423,7 @@ class DAN:
                 break   
             ind += 1  
             temp_vals4=list(vals4[ind-1])
-            all_GT.extend(x[15*24:])
+            all_GT.extend(x[self.train_days:])
             all_DAN.extend(temp_vals4) 
 #         metrics = metric("MC-ANN", np.array(all_DAN), np.array(all_GT))
         mae, mse, rmse, mape = metric("MC-ANN", np.array(all_DAN), np.array(all_GT))
@@ -481,13 +470,11 @@ class DAN:
                 # Forward pass
                 encoder_h, encoder_c, ww = self.encoder(x_train)   
                 out = self.decoder(decoder_input1, encoder_h, encoder_c, ww)  
-               
-                if (self.is_stream == 0) :
-                    out = out*self.std + self.mean
-                    out = out + y_pre                  
-                    loss = self.criterion(out, y_ground)
-                else:
-                    loss = self.criterion(out, y_train) 
+
+                out = out*self.std + self.mean
+                out = out + y_pre                  
+                loss = self.criterion(out, y_ground)
+
                 loss.backward()
                 self.encoder_optimizer.step()
                 self.decoder_optimizer.step()

@@ -41,9 +41,8 @@ class MCANN_I:
         self.is_watersheds = opt.watershed
         self.is_prob_feature = opt.watershed
         self.TrainEnd = opt.model
-        self.os = opt.oversampling
-        self.is_stream = 0 #opt.is_stream    
-        self.gmm_l = 72  #opt.gmm_len
+        self.os = opt.oversampling   
+        self.gmm_l = self.predict_days  #opt.gmm_len
         self.opt_hinter_dim = opt.watershed
         self.is_over_sampling = 1
         self.encoder = EncoderLSTM(self.opt).to(device)        
@@ -54,10 +53,7 @@ class MCANN_I:
 
     def std_denorm_dataset(self, predict_y0, pre_y):
         
-        if  self.is_stream == 1:    
-            a2 = log_std_denorm_dataset(self.mean, self.std, predict_y0, pre_y)
-        else:
-            a2 = r_log_std_denorm_dataset(self.mean, self.std, 0, predict_y0, pre_y)
+        a2 = r_log_std_denorm_dataset(self.mean, self.std, 0, predict_y0, pre_y)
 
         return a2
 
@@ -130,35 +126,35 @@ class MCANN_I:
             R_X.sort_values('datetime', inplace=True)
 
         
-        # read stream data        
+        # read reservoir data        
         point = trainX[trainX["datetime"]==test_point].index.values[0]
-        stream_data = trainX[point-15*24:point]["value"].values.tolist()
+        reservoir_data = trainX[point-self.train_days:point]["value"].values.tolist()
         pre_gt = np.array(trainX[point-1:point]["value"])
         pre_gt = pre_gt[0]
-        gt = np.array(trainX[point:point+3*24]["value"])
+        gt = np.array(trainX[point:point+self.predict_days]["value"])
         if pre_gt is None:
             print("pre_gt is None, please fill it or switch to another time point.")
-        NN = np.isnan(stream_data).any() 
+        NN = np.isnan(reservoir_data).any() 
         if NN:
             print("There is None value in the input sequence.")   
         
         # read rain data
         point = R_X[R_X["datetime"]==test_point].index.values[0]
-        rain_data = R_X[point-15*24:point]["value"].values.tolist()
+        rain_data = R_X[point-self.train_days:point]["value"].values.tolist()
         NN = np.isnan(rain_data).any() 
         if NN:
             print("There is None value in the rain input sequence.")      
        
-        return stream_data, rain_data, pre_gt, gt
+        return reservoir_data, rain_data, pre_gt, gt
     
     def test_single(self, test_point):
         
-        stream_data, indicator_data, pre_gt, gt = self.get_data(test_point)  
-        predict = self.predict(test_point, stream_data, indicator_data, pre_gt)
+        reservoir_data, indicator_data, pre_gt, gt = self.get_data(test_point)  
+        predict = self.predict(test_point, reservoir_data, indicator_data, pre_gt)
         
         return predict, gt
     
-    def predict(self, test_point, stream_data, rain_data, pre_gt):
+    def predict(self, test_point, reservoir_data, rain_data, pre_gt):
         
         time_str = test_point
         self.encoder.eval()
@@ -192,7 +188,7 @@ class MCANN_I:
         y_input1 = np.array([np.concatenate((y2,y3),1)])
         
         # input dimension 1
-        x_test = np.array(r_log_std_normalization_1(stream_data, self.mean, self.std), np.float32).reshape(self.train_days,-1)
+        x_test = np.array(r_log_std_normalization_1(reservoir_data, self.mean, self.std), np.float32).reshape(self.train_days,-1)
 
         if  (self.opt_hinter_dim >= 1):
             x_test_rain = log_std_normalization_1(rain_data, self.R_mean, self.R_std)  
@@ -273,5 +269,5 @@ class MCANN_I:
             predicted, ground_truth = self.test_single(testP)     
             pre.extend(predicted)
             gt.extend(ground_truth)
-        metric_rolling('Every 3 days', pre, gt, rm=72)
-        metric_rolling('Every 8 hours', pre, gt, rm=8)
+        metric_rolling('Every 3 days', pre, gt, rm=self.predict_days, inter=self.predict_days)
+        metric_rolling('Every 8 hours', pre, gt, rm=8, inter=self.predict_days)

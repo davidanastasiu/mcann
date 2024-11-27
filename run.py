@@ -23,7 +23,6 @@ class Options():
         self.parser.add_argument('--val_seed', default=2007, help='random seed for val sampling')
         self.parser.add_argument('--reservoir_sensor', default='reservoir_stor_4007_sof24', help='reservoir dataset')
         self.parser.add_argument('--rain_sensor', default='reservoir_stor_4007_sof24', help='rain dataset')
-        self.parser.add_argument('--is_stream', default=0, help='stream:1, reservoir:0')
         self.parser.add_argument('--os_s', type=int, default=0, help='oversampling steps')
         self.parser.add_argument('--os_v', type=int, default=5, help='oversampling frequency')
         self.parser.add_argument('--seq_weight', type=float, default=0.3, help='sequence cluster weight')        

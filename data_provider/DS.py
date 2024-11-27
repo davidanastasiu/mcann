@@ -52,12 +52,11 @@ class DS:
         self.val_near_days = self.predict_days
         self.lens = self.train_days + self.predict_days+1
         self.batch_size = opt.batchsize
-        self.is_stream = 0 #opt.is_stream
         self.thre1 = 0
         self.thre2 = 0
         self.os_h = opt.os_s
         self.os_l = opt.os_s
-        self.gmm_l = 72 #opt.gmm_len
+        self.gmm_l = self.predict_days #opt.gmm_len
 
         self.is_prob_feature = 1
         self.val_data_loader = []
@@ -193,10 +192,7 @@ class DS:
         self.data = np.array(self.sensor_data["value"].fillna(np.nan))
         self.diff_data = diff_order_1(self.data)
         self.data_time = np.array(self.sensor_data["datetime"].fillna(np.nan))
-        if  self.is_stream == 1:
-            self.sensor_data_norm, self.mean, self.std = log_std_normalization(self.data)
-        else:
-            self.sensor_data_norm, self.mean, self.std, self.mini = r_log_std_normalization(self.data)
+        self.sensor_data_norm, self.mean, self.std, self.mini = r_log_std_normalization(self.data)
         self.sensor_data_norm1 = [[ff] for ff in self.sensor_data_norm]
 
 
@@ -347,7 +343,7 @@ class DS:
 
 #         near_len = max(self.train_days, self.predict_days, self.val_near_days**4) # Avoid the left near_len and the right near_len points to train
 
-        near_len = self.predict_days #self.val_near_days*24*4
+        near_len = self.predict_days
 
         random.seed(self.opt.val_seed)
 
@@ -359,13 +355,9 @@ class DS:
             ii = 0
             while ii < self.opt.val_size:
 
-                i = random.randint(3*24, len(self.data)-18*24-1)
-                if self.is_stream == 1:
-                    a1 = -9
-                    a2 = -6
-                else:
-                    a1 = 0
-                    a2 = -13
+                i = random.randint(self.predict_days, len(self.data)-6*self.predict_days-1)
+                a1 = 0
+                a2 = -13
                 if (not np.isnan(self.sensor_data_norm1[i:i+self.lens]).any()) and (not np.isnan(self.R_data[i:i+self.lens]).any())  and (self.tag[i+self.train_days] <= a1 or a2 < self.tag[i+self.train_days] < 0 or 2 <= self.tag[i+self.train_days] <= 3 ):
 
                     self.tag[i+self.train_days] = 2 # tag 2 means in validation set
@@ -409,14 +401,10 @@ class DS:
             jj = 0
             while ii < self.opt.train_volume:
 
-                i = random.randint(3*24*4, len(self.sensor_data_norm)-93*24*4-1)
+                i = random.randint(self.predict_days*4, len(self.sensor_data_norm)-31*self.predict_days*4-1)
                 pre1 = np.array(self.sensor_data_norm[(i+self.train_days):(i+self.train_days+self.predict_days)])
-                if self.is_stream == 1:
-                    a1 = -9
-                    a2 = -6
-                else:
-                    a1 = 0
-                    a2 = -13
+                a1 = 0
+                a2 = -13
                 if (np.max(pre1) > self.thre2):
                     a3 = self.os_h
                     max_index = np.argmax(pre1)
@@ -430,7 +418,7 @@ class DS:
                         i = i - a3*a5
                     for kk in range(a3): #(int(self.predict_days/self.iterval)):
                         i = i + a5
-                        if i > len(self.data)-93*24*4-1 or i < 3*24*4 :
+                        if i > len(self.data)-31*self.predict_days*4-1 or i < self.predict_days*4 :
                             continue
                         if ( not np.isnan(self.sensor_data_norm1[i:i+self.lens]).any() and self.tag[i+self.train_days] != 2 and self.tag[i+self.train_days] != 3  and self.tag[i+self.train_days] != 4):
 
@@ -561,10 +549,7 @@ class DS:
         self.data = np.array(self.sensor_data["value"].fillna(np.nan))
         self.diff_data = diff_order_1(self.data)
         self.data_time = np.array(self.sensor_data["datetime"].fillna(np.nan))
-        if  self.is_stream == 1:
-            self.sensor_data_norm = log_std_normalization_1(self.data, self.mean, self.std)  # use old mean & std
-        else:
-            self.sensor_data_norm = r_log_std_normalization_1(self.data, self.mean, self.std)  # use old mean & std
+        self.sensor_data_norm = r_log_std_normalization_1(self.data, self.mean, self.std)  # use old mean & std
         self.sensor_data_norm1 = [[ff] for ff in self.sensor_data_norm]
 
         if  (self.opt_hinter_dim >= 1):
@@ -687,21 +672,8 @@ class DS:
         end_num = self.trainX[self.trainX["datetime"]==self.test_end_time].index.values[0] - start_num
 
         iterval = self.roll
-        if self.is_stream == 1:
-            for i in range(int((end_num-begin_num-3*24*4)/16)):
-                point = self.data_time[begin_num+i*16]
-                if not np.isnan(np.array(self.data[begin_num+i*16-15*24*4:begin_num+i*16 + 3*24*4])).any() :
-                    self.test_points.append([point])
-        else:
-            for i in range(int((end_num-begin_num-3*24)/iterval)): # do inference every 24 hours
-                point = self.data_time[begin_num+i*iterval]
-                if not np.isnan(np.array(self.data[begin_num+i*iterval-15*24:begin_num+i*iterval + 3*24])).any() :
-                    self.test_points.append([point])
 
-# assuming it exists
-#         self.opt.name = "%s" % (self.opt.model)
-#         test_dir = os.path.join(self.opt.outf, self.opt.name, 'test')
-#         file_name = os.path.join(test_dir, 'test_timestamps_24avg.tsv')
-
-#         pd_temp = pd.DataFrame(data=self.test_points, columns=["Hold Out Start"])
-#         pd_temp.to_csv(file_name, sep = '\t')
+        for i in range(int((end_num-begin_num-self.predict_days)/iterval)): # do inference every 24 hours
+            point = self.data_time[begin_num+i*iterval]
+            if not np.isnan(np.array(self.data[begin_num+i*iterval-self.train_days:begin_num+i*iterval + self.predict_days])).any() :
+                self.test_points.append([point])

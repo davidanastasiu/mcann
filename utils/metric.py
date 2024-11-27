@@ -37,10 +37,10 @@ def metric(model, pred, true):
 
     return mae, mse, rmse, mape
 
-def metric_g(name, pre, gt):
+def metric_g(name, pre, gt, inter=72):
     pre = np.array(pre)
     gt = np.array(gt)
-    ll = int(len(pre)/72)
+    ll = int(len(pre)/inter)
     mae_all = []
     mse_all = []
     rmse_all = []
@@ -50,7 +50,7 @@ def metric_g(name, pre, gt):
     l3 = []
     lll=[]
     for i in range(ll):
-        mae, mse, rmse, mape = metric(name, pre[i*72:(i+1)*72], gt[i*72:(i+1)*72])
+        mae, mse, rmse, mape = metric(name, pre[i*inter:(i+1)*inter], gt[i*inter:(i+1)*inter])
         rmse_all.append(rmse)
         mape_all.append(mape)
 
@@ -61,7 +61,7 @@ def metric_g(name, pre, gt):
 
     return lll
 
-def metric_rolling1(name, pre, gt, rm=16):
+def metric_rolling1(name, pre, gt, rm=16, inter=72):
     pre = np.array(pre)
     gt = np.array(gt)
     ll = int(len(pre)/72)
@@ -73,7 +73,7 @@ def metric_rolling1(name, pre, gt, rm=16):
     l3 = []
     lll=[]
     for i in range(ll):
-        mae, mse, rmse, mape = metric(name, pre[i*72:(i*72+rm)], gt[i*72:(i*72+rm)])
+        mae, mse, rmse, mape = metric(name, pre[i*inter:(i*inter+rm)], gt[i*inter:(i*inter+rm)])
         rmse_all.append(rmse)
         mape_all.append(mape)
     l2.append(np.around(np.mean(np.array(rmse_all)),2))
@@ -85,15 +85,15 @@ def metric_rolling1(name, pre, gt, rm=16):
     print("MAPE: ", np.array(lll[1][0]))
     return lll
 
-def metric_rolling(name, pre, gt, rm=16):
+def metric_rolling(name, pre, gt, rm=16, inter=72):
     pre = np.array(pre)
     gt = np.array(gt)
-    ll = int(len(pre)/72)
+    ll = int(len(pre)/inter)
     pre_all = []
     gt_all = []
     for i in range(ll):
-        pre_all.extend(pre[i*72:(i*72+rm)])
-        gt_all.extend(gt[i*72:(i*72+rm)])
+        pre_all.extend(pre[i*inter:(i*inter+rm)])
+        gt_all.extend(gt[i*inter:(i*inter+rm)])
     _, _, rmse, mape = metric(name, np.array(pre_all), np.array(gt_all))
 
     print("For rolling prediction: ", name)
