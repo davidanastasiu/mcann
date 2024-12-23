@@ -413,9 +413,7 @@ class DS:
             ii = 0
             while ii < self.opt.val_size:
 
-                i = random.randint(
-                    self.predict_days, len(self.data) - 6 * self.predict_days - 1
-                )
+                i = random.randint(self.predict_days, len(self.data) - self.lens - 1)
                 a1 = 0
                 a2 = -13
                 if (
