@@ -1,12 +1,7 @@
 import argparse
 import os
 import torch
-import numpy as np  # unused?
-import random  # unused?
 import pandas as pd
-import sklearn  # unused?
-from sklearn.mixture import GaussianMixture  # unused?
-from scipy import stats  # unused?
 from .data_provider.DS import DS
 from .models.Group_GMM5 import DAN
 from .models.Inference import MCANN_I
@@ -31,9 +26,6 @@ class Options:
             "--reservoir_sensor",
             default="reservoir_stor_4007_sof24",
             help="reservoir dataset",
-        )
-        self.parser.add_argument(
-            "--rain_sensor", default="reservoir_stor_4007_sof24", help="rain dataset"
         )
         self.parser.add_argument(
             "--os_s", type=int, default=0, help="oversampling steps"
@@ -107,12 +99,6 @@ class Options:
             type=str,
             default="2019-07-01 00:30:00",
             help="end time of the test set",
-        )
-        self.parser.add_argument(
-            "--watershed",
-            type=int,
-            default=0,
-            help="1 if trained with rain info， else with GMM indicator",
         )
         self.parser.add_argument(
             "--oversampling",
@@ -232,16 +218,12 @@ class Options:
                 self.opt.hidden_dim = int(val)
             elif n == "self.opt.reservoir_sensor":
                 self.opt.reservoir_sensor = str(val)
-            elif n == "self.opt.rain_sensor":
-                self.opt.rain_sensor = str(val)
             elif n == "self.opt.atten_dim":
                 self.opt.atten_dim = int(val)
             elif n == "self.opt.layer":
                 self.opt.layer = int(val)
             elif n == "self.opt.r_shift":
                 self.opt.r_shift = int(val)
-            elif n == "self.opt.watershed":
-                self.opt.watershed = int(val)
             elif n == "self.opt.train_seed":
                 self.opt.train_seed = int(val)
             elif n == "self.opt.batchsize":
@@ -294,17 +276,14 @@ if __name__ == "__main__":
     )
     trainX.columns = ["datetime", "value"]
     trainX.sort_values("datetime", inplace=True),
-    R_X = pd.read_csv("./data_provider/datasets/" + opt.rain_sensor + ".tsv", sep="\t")
-    R_X.columns = ["datetime", "value"]
-    R_X.sort_values("datetime", inplace=True)
-    ds = DS(opt, trainX, R_X)
+    ds = DS(opt, trainX)
 
     # model training
     model = DAN(opt, ds)
     model.train()
 
     # Inferencing, saving the result to Inference_dir
-    ds.refresh_dataset(trainX, R_X)
+    ds.refresh_dataset(trainX)
     model.model_load()
     Inference_result = model.inference()
 
