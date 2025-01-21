@@ -1,16 +1,11 @@
 import time
 import os
-import sys  # unused?
 import math
-import torch.nn.functional as F  # unused?
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim  # unused?
 import pandas as pd
 import random
-from scipy import stats  # unused?
-from sklearn.mixture import GaussianMixture  # unused?
 from ..utils.utils2 import (
     r_log_std_denorm_dataset,
     cos_date,
@@ -45,7 +40,6 @@ class DAN:
         self.data = dataset.get_data()
         self.sensor_data_norm = dataset.get_sensor_data_norm()
         self.sensor_data_norm_1 = dataset.get_sensor_data_norm1()
-        self.R_norm_data = dataset.get_R_sensor_data_norm()
         self.mean = dataset.get_mean()
         self.std = dataset.get_std()
         self.mini = 0
@@ -57,16 +51,13 @@ class DAN:
         self.predict_days = opt.output_len
         self.output_dim = opt.output_dim
         self.hidden_dim = opt.hidden_dim
-        self.is_watersheds = opt.watershed
-        self.is_prob_feature = opt.watershed
         self.TrainEnd = opt.model
         self.os = opt.oversampling
         self.thre1 = dataset.thre1
         self.thre2 = dataset.thre2
         self.DATA = dataset.DATA
         self.gmm = dataset.gmm
-        self.gmm_l = self.predict_days  # opt.gmm_len
-        self.is_over_sampling = 1
+        self.gmm_l = self.predict_days 
         self.batchsize = opt.batchsize
         self.epochs = opt.epochs
         self.layer_dim = opt.layer
@@ -108,21 +99,12 @@ class DAN:
     def inference_test(self, x_test, y_input1):
 
         y_predict = []
-        d_out = torch.tensor([]).to(device)  # unused?
         self.encoder.eval()
         self.decoder.eval()
-        sig = nn.Sigmoid()  # unused?
 
         with torch.no_grad():
             x_test = torch.from_numpy(np.array(x_test, np.float32)).to(device)
             y_input1 = torch.from_numpy(np.array(y_input1, np.float32)).to(device)
-
-            h0 = torch.zeros(self.layer_dim, x_test.size(0), self.hidden_dim).to(
-                device
-            )  # unused?
-            c0 = torch.zeros(self.layer_dim, x_test.size(0), self.hidden_dim).to(
-                device
-            )  # unused?
 
             encoder_h, encoder_c, ww = self.encoder(x_test)
             out4 = self.decoder(y_input1, encoder_h, encoder_c, ww)
@@ -146,31 +128,21 @@ class DAN:
             self.trainX["datetime"] == self.opt.start_point
         ].index.values[0]
         test_point = point - start_num
-        pre_gt = self.trainX[point - 1: point + self.opt.output_len - 1][
-            "value"
-        ].values.tolist()
+        pre_gt = self.trainX[point - 1: point + self.opt.output_len - 1]["value"].values.tolist()
         y = self.trainX[point: point + self.predict_days]["value"]
 
         b = test_point
         e = test_point + self.predict_days
 
-        y2 = cos_date(
-            self.month[b:e], self.day[b:e], self.hour[b:e]
-        )  # represent cos(int(data)) here
+        y2 = cos_date(self.month[b:e], self.day[b:e], self.hour[b:e])  # represent cos(int(data)) here
         y2 = [[ff] for ff in y2]
-
-        y3 = sin_date(
-            self.month[b:e], self.day[b:e], self.hour[b:e]
-        )  # represent sin(int(data)) here
+        y3 = sin_date(self.month[b:e], self.day[b:e], self.hour[b:e])  # represent sin(int(data)) here
         y3 = [[ff] for ff in y3]
 
         y_input1 = np.array([np.concatenate((y2, y3), 1)])
 
         # inference
-        x_test = np.array(
-            self.sensor_data_norm_1[test_point - self.train_days: test_point],
-            np.float32,
-        ).reshape(self.train_days, -1)
+        x_test = np.array(self.sensor_data_norm_1[test_point - self.train_days: test_point], np.float32).reshape(self.train_days, -1)
         x_test = [x_test]
 
         gmm_prob30 = self.gmm.predict_proba(
@@ -203,12 +175,11 @@ class DAN:
         pre_gt = np.array(self.trainX[point - 1: point]["value"])
         pre_gt = pre_gt[0]
         if pre_gt is None:
-            print(pre_gt)
+            print("pre_gt is None.")
 
         test_predict = np.array(self.std_denorm_dataset(y_predict, pre_gt, self.mini))
-        diff_predict = []
 
-        return test_predict, y, diff_predict
+        return test_predict, y
 
     def generate_single_val_rmse(self, min_RMSE=500):
 
@@ -226,7 +197,7 @@ class DAN:
 
             val_pred_list_print = []
             val_point = val_points[i]
-            test_predict, ground_truth, _ = self.test_single(val_point)
+            test_predict, ground_truth = self.test_single(val_point)
             rec_predict = test_predict
 
             for j in range(len(rec_predict)):
@@ -251,48 +222,10 @@ class DAN:
             gt_mape_list.extend(ground_truth)
             val_mape_list.extend(test_predict)
 
-        name = "%s" % (self.opt.model)  # unused?
-        file_name = os.path.join(
-            self.val_dir, "validation_timestamps_24avg.tsv"
-        )  # unused?
-
         new_min_RMSE = min_RMSE
 
-        if self.is_over_sampling == 1:
-            OS = "_OS"
-        else:
-            OS = "_OS-null"
-
-        if self.is_watersheds == 1:
-            if self.is_prob_feature == 0:
-                watersheds = "shed"
-            else:
-                watersheds = "Shed-ProbFeature"
-        elif self.is_prob_feature == 0:
-            watersheds = "solo"
-        else:
-            watersheds = "ProbFeature"
-
-        basic_path = self.val_dir + "/" + str(self.sensor_id) + OS
-        basic_model_path = self.expr_dir + "/" + str(self.sensor_id) + OS  # unused?
-        #         total = math.sqrt(total)
-
         if total < min_RMSE:
-
-            aa = pd.DataFrame(data=val_pred_lists_print)
-            aa.to_csv(
-                basic_path
-                + "_"
-                + watersheds
-                + str(self.TrainEnd)
-                + "_pred_lists_print.tsv",
-                sep="\t",
-            )
-
             # save_model
-            encoder_name = self.expr_dir + "/" + "MCANN_encoder.pt"  # unused?
-            decoder_name = self.expr_dir + "/" + "MCANN_decoder.pt"  # unused?
-
             new_min_RMSE = total
             expr_dir = os.path.join(self.opt.outf, self.opt.name, "train")
             c_dir = os.getcwd()
@@ -355,7 +288,7 @@ class DAN:
             start = time.time()
             val_pred_list_print = []
             val_point = val_points[i]
-            test_predict, ground_truth, _ = self.test_single(val_point)
+            test_predict, ground_truth = self.test_single(val_point)
             rec_predict = test_predict
             val_MSE = np.square(np.subtract(ground_truth, test_predict)).mean()
             val_RMSE = math.sqrt(val_MSE)
@@ -372,40 +305,13 @@ class DAN:
             val_mape_list.extend(test_predict)
 
         end = time.time()
-
-        avg_rmse = np.around(np.mean(np.array(val_rmse_list)), 2)  # unused?
+        
         print("Inferencing test points ", len(val_points), " use: ", end - start)
 
-        pd_temp = pd.DataFrame(
-            val_pred_list, columns=("start", "No.", "prediction")
-        )  # unused?
-
-        if self.is_over_sampling == 1:
-            OS = "_OS"
-        else:
-            OS = "_OS-null"
-
-        if self.is_watersheds == 1:
-            if self.is_prob_feature == 0:
-                watersheds = "shed"
-            else:
-                watersheds = "Shed-ProbFeature"
-        elif self.is_prob_feature == 0:
-            watersheds = "solo"
-        else:
-            watersheds = "ProbFeature"
-
-        basic_path = self.test_dir + "/" + str(self.sensor_id) + OS
-        basic_model_path = self.expr_dir + "/" + str(self.sensor_id) + OS  # unused?
+        basic_path = self.test_dir + "/"
         if self.opt.save == 1:
             aa = pd.DataFrame(data=val_pred_lists_print)
-            i_dir = (
-                basic_path
-                + "_"
-                + watersheds
-                + str(self.TrainEnd)
-                + "_pred_lists_print.tsv"
-            )
+            i_dir = basic_path + "pred_lists_print.tsv"
             aa.to_csv(i_dir, sep="\t")
             print("Inferencing result is saved in: ", i_dir)
 
@@ -416,27 +322,27 @@ class DAN:
         else:
             mape = 100
 
-        return total, mape, val_pred_lists_print
+        return val_pred_lists_print
 
     def inference(self):
         start = time.time()
-        self.dataset.gen_test_data()  # refresh dataset, generate test points file and test_data
+        # refresh dataset, generate test points file and test_data
+        self.dataset.gen_test_data()  
         end = time.time()
         print("generate test points file and test_data: ", end - start)
+        # read the test set
+        self.test_data = np.array(self.dataset.get_test_points()).squeeze(1) 
         # refresh the related values
-        self.test_data = np.array(self.dataset.get_test_points()).squeeze(
-            1
-        )  # read the test set
         self.data = self.dataset.get_data()
         self.sensor_data_norm = self.dataset.get_sensor_data_norm()
         self.sensor_data_norm_1 = self.dataset.get_sensor_data_norm1()
-        self.R_norm_data = self.dataset.get_R_sensor_data_norm()
         self.mean = self.dataset.get_mean()
         self.std = self.dataset.get_std()
         self.month = self.dataset.get_month()
         self.day = self.dataset.get_day()
         self.hour = self.dataset.get_hour()
-        rmse, mape, aa = self.generate_test_rmse_mape()  # inference on test set
+        # inference on test set
+        aa = self.generate_test_rmse_mape()  
         return aa
 
     def compute_metrics(self, aa):
@@ -464,7 +370,6 @@ class DAN:
         ind = 0
         while loop < len(val_points):
             ii = val_points[loop]
-            val_point = val_points[ind]  # unused?
             point = trainX[trainX["datetime"] == ii].index.values[0]
             x = trainX[point - self.train_days: point + self.predict_days][
                 "value"
@@ -479,7 +384,6 @@ class DAN:
             temp_vals4 = list(vals4[ind - 1])
             all_GT.extend(x[self.train_days:])
             all_DAN.extend(temp_vals4)
-        #         metrics = metric("MC-ANN", np.array(all_DAN), np.array(all_GT))
         mae, mse, rmse, mape = metric("MC-ANN", np.array(all_DAN), np.array(all_GT))
         return rmse, mape
 
@@ -489,39 +393,26 @@ class DAN:
         early_stop = 0
         old_val_loss = 1000
         min_RMSE = 500000
-        sig = nn.Sigmoid()  # unused?
-        m = nn.Softmax(dim=1)  # unused?
 
         for epoch in range(num_epochs):
             print_loss_total = 0  # Reset every epoch
             self.encoder.train()
             self.decoder.train()
-            random0 = 0  # unused?
             start = time.time()
 
             for i, batch in enumerate(self.dataloader):
                 x_train = [TrainData for TrainData, _ in batch]
+                x_train = torch.from_numpy(np.array(x_train, np.float32)).to(device)
+                
                 y_train = [TrainLabel for _, TrainLabel in batch]
-                y_train = np.array(y_train)  # .squeeze()
 
-                y_train1 = np.array(y_train)[:, :, 1:3]
-                y_train0 = np.array(y_train)[:, :, 0:1]
+                y_train1 = np.array(y_train)[:, :, 1:3]                
                 y_pre = np.array(y_train)[:, :, 3:4]
                 y_ground = np.array(y_train)[:, :, 4:5]
 
-                x_train = torch.from_numpy(np.array(x_train, np.float32)).to(device)
-                y_train = torch.squeeze(
-                    torch.from_numpy(np.array(y_train0, np.float32)).to(device), dim=2
-                )
-                decoder_input1 = torch.from_numpy(np.array(y_train1, np.float32)).to(
-                    device
-                )
-                y_pre = torch.squeeze(
-                    torch.from_numpy(np.array(y_pre, np.float32)).to(device)
-                )
-                y_ground = torch.squeeze(
-                    torch.from_numpy(np.array(y_ground, np.float32)).to(device)
-                )
+                decoder_input1 = torch.from_numpy(np.array(y_train1, np.float32)).to(device)
+                y_pre = torch.squeeze(torch.from_numpy(np.array(y_pre, np.float32)).to(device))
+                y_ground = torch.squeeze(torch.from_numpy(np.array(y_ground, np.float32)).to(device))
 
                 self.encoder_optimizer.zero_grad()
                 self.decoder_optimizer.zero_grad()

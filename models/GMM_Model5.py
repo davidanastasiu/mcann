@@ -1,15 +1,7 @@
-import time  # unused?
-import os  # unused?
-import sys  # unused?
 import math
-import torch.nn.functional as F  # unused?
-import numpy as np  # unused?
 import torch
 import torch.nn as nn
-import torch.optim as optim  # unused?
-import pandas as pd  # unused?
 import random
-from sklearn.metrics import mean_absolute_percentage_error  # unused?
 import logging
 
 logging.basicConfig(filename="Encoder_LSTM.log", filemode="w", level=logging.DEBUG)
@@ -112,9 +104,9 @@ class EncoderLSTM(nn.Module):
         wwe = wwe.repeat(ww0.size(0), 1, 1)
 
         # embeding -> self-attention -> add&norm -> self-attention -> add&norm -> linear -> softmax
-        ww0 = ww[:, :, 0:1]
-        ww0 = tanh(self.L_out0(ww0))
-        ww0 = torch.cat((ww0, wwe), dim=2)
+        ww0 = ww[:, :, 0:1]  # 1st component
+        ww0 = tanh(self.L_out0(ww0)) # increase dimension
+        ww0 = torch.cat((ww0, wwe), dim=2) # add position embedding
         ww00, _ = self.attn0(ww0, ww0, ww0)
         ww0 = self.bn(ww0 + ww00)
         ww00, _ = self.attn3(ww0, ww0, ww0)
@@ -191,13 +183,7 @@ class DecoderLSTM(nn.Module):
             bidirectional=False,
             batch_first=True,
         )
-        self.bn0 = nn.BatchNorm1d(opt.output_len)
-        self.bn1 = nn.BatchNorm1d(opt.output_len)
-        self.bn2 = nn.BatchNorm1d(opt.output_len)
 
-        self.L_out0 = nn.Linear(1, self.hidden_dim)
-        self.L_out1 = nn.Linear(self.hidden_dim, atten_dim)
-        self.L_out2 = nn.Linear(self.hidden_dim, 1)
         self.L_out3 = nn.Linear(self.hidden_dim, 1)
         self.L_out4 = nn.Linear(self.hidden_dim, 1)
         self.L_out5 = nn.Linear(self.hidden_dim, 1)
@@ -210,7 +196,6 @@ class DecoderLSTM(nn.Module):
         c1 = encoder_c[1]
         h2 = encoder_h[2]
         c2 = encoder_c[2]
-        relu = nn.ReLU()  # unused?
         hn = h0
         cn = c0
         out0, (hnn, cnn) = self.lstm0(x, (hn, cn))

@@ -1,19 +1,7 @@
-#!/usr/bin/env python
-# Hard Train......................
-# coding: utf-8
-
-# In[17]:
-
-
-import time  # unused?
 import os
-import sys  # unused?
-import math  # unused?
-import torch.nn.functional as F  # unused?
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.optim as optim  # unused?
 import pandas as pd
 import random
 from ..utils.utils2 import (
@@ -48,12 +36,9 @@ class MCANN_I:
         self.output_dim = opt.output_dim
         self.hidden_dim = opt.hidden_dim
         self.layer_dim = opt.layer
-        self.is_watersheds = opt.watershed
-        self.is_prob_feature = opt.watershed
         self.TrainEnd = opt.model
         self.os = opt.oversampling
-        self.gmm_l = self.predict_days  # opt.gmm_len
-        self.opt_hinter_dim = opt.watershed
+        self.gmm_l = self.predict_days 
         self.is_over_sampling = 1
         self.encoder = EncoderLSTM(self.opt).to(device)
         self.decoder = DecoderLSTM(self.opt).to(device)
@@ -70,22 +55,13 @@ class MCANN_I:
     def inference_test(self, x_test, y_input1):
 
         y_predict = []
-        d_out = torch.tensor([]).to(device)  # unused?
         self.encoder.eval()
         self.decoder.eval()
-        sig = nn.Sigmoid()  # unused?
 
         with torch.no_grad():
 
             x_test = torch.from_numpy(np.array(x_test, np.float32)).to(device)
             y_input1 = torch.from_numpy(np.array(y_input1, np.float32)).to(device)
-
-            h0 = torch.zeros(self.layer_dim, x_test.size(0), self.hidden_dim).to(
-                device
-            )  # unused?
-            c0 = torch.zeros(self.layer_dim, x_test.size(0), self.hidden_dim).to(
-                device
-            )  # unused?
 
             encoder_h, encoder_c, ww = self.encoder(x_test)
             out4 = self.decoder(y_input1, encoder_h, encoder_c, ww)
@@ -105,8 +81,6 @@ class MCANN_I:
         print("norm is: ", norm)
         self.mean = norm[0]
         self.std = norm[1]
-        self.R_mean = norm[2]
-        self.R_std = norm[3]
 
         with zipfile.ZipFile(zipf, "r") as archive:
             with archive.open("MCANN_encoder.pt", "r") as pt_file:
@@ -132,14 +106,6 @@ class MCANN_I:
         )
         trainX.columns = ["datetime", "value"]
         trainX.sort_values("datetime", inplace=True),
-        if self.opt.watershed == 0:
-            R_X = trainX
-        else:
-            R_X = pd.read_csv(
-                "./data_provider/datasets/" + self.opt.rain_sensor + ".tsv", sep="\t"
-            )
-            R_X.columns = ["id", "datetime", "value"]
-            R_X.sort_values("datetime", inplace=True)
 
         # read reservoir data
         point = trainX[trainX["datetime"] == test_point].index.values[0]
@@ -155,23 +121,16 @@ class MCANN_I:
         if NN:
             print("There is None value in the input sequence.")
 
-        # read rain data
-        point = R_X[R_X["datetime"] == test_point].index.values[0]
-        rain_data = R_X[point - self.train_days: point]["value"].values.tolist()
-        NN = np.isnan(rain_data).any()
-        if NN:
-            print("There is None value in the rain input sequence.")
-
-        return reservoir_data, rain_data, pre_gt, gt
+        return reservoir_data, pre_gt, gt
 
     def test_single(self, test_point):
 
-        reservoir_data, indicator_data, pre_gt, gt = self.get_data(test_point)
-        predict = self.predict(test_point, reservoir_data, indicator_data, pre_gt)
+        reservoir_data, pre_gt, gt = self.get_data(test_point)
+        predict = self.predict(test_point, reservoir_data, pre_gt)
 
         return predict, gt
 
-    def predict(self, test_point, reservoir_data, rain_data, pre_gt):
+    def predict(self, test_point, reservoir_data, pre_gt):
 
         time_str = test_point
         self.encoder.eval()
@@ -209,12 +168,7 @@ class MCANN_I:
             r_log_std_normalization_1(reservoir_data, self.mean, self.std), np.float32
         ).reshape(self.train_days, -1)
 
-        if self.opt_hinter_dim >= 1:
-            x_test_rain = log_std_normalization_1(rain_data, self.R_mean, self.R_std)
-            x_test_rain = [[ff] for ff in x_test_rain]
-            gmm_input = x_test_rain
-        else:
-            gmm_input = x_test
+        gmm_input = x_test
 
         # input dimension 2
         weights3 = self.gm3.weights_
@@ -243,9 +197,7 @@ class MCANN_I:
             if oi != order1 and oi != order2:
                 order3 = oi
         data_prob3 = np.concatenate((d0, d1), 1)
-        data_prob3 = np.concatenate(
-            (data_prob3, data_prob30[:, order3].reshape(-1, 1)), 1
-        )
+        data_prob3 = np.concatenate((data_prob3, data_prob30[:, order3].reshape(-1, 1)), 1)
         recover_prob = np.array(data_prob3, np.float32)
         x_test = np.concatenate((x_test, recover_prob[:, 0:1]), 1)
         x_test = np.concatenate((x_test, recover_prob[:, 1:2]), 1)
@@ -281,8 +233,6 @@ class MCANN_I:
         y_predict = [y_predict[i].item() for i in range(len(y_predict))]
 
         test_predict = np.array(self.std_denorm_dataset(y_predict, pre_gt))
-
-        diff_predict = []  # unused?
         test_predict = (test_predict + abs(test_predict)) / 2
 
         return test_predict
@@ -293,7 +243,6 @@ class MCANN_I:
             "./data_provider/datasets/test_timestamps_24avg.tsv", sep="\t"
         )
         test_points = test_set["Hold Out Start"]
-        count = 0  # unused?
         pre = []
         gt = []
         for testP in test_points:
