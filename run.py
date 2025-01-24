@@ -48,13 +48,13 @@ class Options:
         )
 
         self.parser.add_argument(
-            "--train_volume", type=int, default=4000, help="train set size"
+            "--train_volume", type=int, default=20000, help="train set size"
         )
         self.parser.add_argument(
             "--hidden_dim", type=int, default=512, help="hidden dim of basic layers"
         )
         self.parser.add_argument(
-            "--atten_dim", type=int, default=600, help="hidden dim of attention layers"
+            "--atten_dim", type=int, default=300, help="hidden dim of attention layers"
         )
         self.parser.add_argument(
             "--layer", type=int, default=2, help="number of layers"
@@ -79,7 +79,7 @@ class Options:
         self.parser.add_argument(
             "--start_point",
             type=str,
-            default="1991-07-01 23:30:00",
+            default="1983-07-01 23:30:00",
             help="start time of the train set",
         )
         self.parser.add_argument(
@@ -103,7 +103,7 @@ class Options:
         self.parser.add_argument(
             "--oversampling",
             type=str,
-            default=40,
+            default=30,
             help="ratio of training data with extreme points.",
         )
 
