@@ -2,26 +2,18 @@
 
 We present `MC-ANN`,  a Mixture Clustering-Based Attention Neural Network for time Series Forecasting, which has been accepted by TPAMI 2025. If you make use of our code or data, please cite our paper.
 
+```bibtex
 @ARTICLE{li2025mcann,
-
-  author={Yanhong Li and David Anastasiu},
-  
+  author={Yanhong Li and David Anastasiu}, 
   journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
-  
   title={ MC-ANN: A Mixture Clustering-Based Attention Neural Network for Time Series Forecasting}, 
-  
-  year={2025},
-  
-  volume={},
-  
-  number={},
-  
-  pages={},
-  
+  year={2025}, 
+  volume={},  
+  number={},  
+  pages={}, 
   keywords={ Pattern recognition; deep recurrent neural networks; encoder decoder; time series forecasting; attention clustering network; Gaussian Mixture; hydrology prediction; reservoir water level},
-  
   doi={}}
-
+```
 ## Preliminaries
 
 Experiments were executed in an Anaconda 3 environment with Python 3.8.8. The following will create an Anaconda environment and install the requisite packages for the project.
