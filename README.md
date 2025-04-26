@@ -12,7 +12,7 @@ We present `MC-ANN`,  a Mixture Clustering-Based Attention Neural Network for ti
   number={},  
   pages={}, 
   keywords={ Pattern recognition; deep recurrent neural networks; encoder decoder; time series forecasting; attention clustering network; Gaussian Mixture; hydrology prediction; reservoir water level},
-  doi={}}
+  doi={10.1109/TPAMI.2025.3565224}}
 ```
 ## Preliminaries
 
